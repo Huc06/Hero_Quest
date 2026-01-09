@@ -1,0 +1,8 @@
+{
+  "name": "Hero Quest: Sui Realm",
+  "description": "A 2D fantasy RPG adventure integrating Sui Blockchain concepts and AI-driven storytelling with Phaser.io and React.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
