@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { HeroClass, GameState, HeroData, InventoryItem, Quest } from './types';
-import { CLASS_METADATA, DEFAULT_SKILLS } from './constants';
+import { CLASS_METADATA, DEFAULT_SKILLS } from './data';
 import HeroQuestGame from './components/HeroQuestGame';
-import { Wallet, Shield, Package, Settings, Zap, User, X, Swords, Heart, Activity, Wind, Star } from 'lucide-react';
+import { Shield, Package, Zap, User, X, Swords, Heart, Wind } from 'lucide-react';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
@@ -92,46 +92,7 @@ const App: React.FC = () => {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-800 rounded-full blur-[120px]"></div>
       </div>
 
-      {/* Top Nav - Ẩn trong Opening và Title scene */}
-      <div className={`absolute top-0 left-0 w-full p-6 flex justify-between items-start z-[100] pointer-events-none ${gameState.scene === 'Opening' || gameState.scene === 'Title' ? 'hidden' : ''}`}>
-        <div className="flex flex-col space-y-2 pointer-events-auto">
-          {gameState.currentHero ? (
-            <div className="bg-slate-900/80 border border-slate-700/50 p-3 rounded-2xl flex items-center space-x-4 backdrop-blur-xl shadow-2xl">
-              <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-800 rounded-xl flex items-center justify-center text-2xl border border-slate-600">
-                {CLASS_METADATA[gameState.currentHero.classType].icon}
-              </div>
-              <div className="pr-4">
-                <div className="text-[10px] uppercase tracking-widest text-amber-400 font-bold">
-                  Lv. {gameState.currentHero.level} {CLASS_METADATA[gameState.currentHero.classType].name}
-                </div>
-                <div className="font-medieval text-lg leading-tight">{gameState.currentHero.name}</div>
-                <div className="w-24 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: '30%' }}></div>
-                </div>
-              </div>
-            </div>
-          ) : (
-             <div className="font-medieval text-3xl text-amber-500 drop-shadow-md">Hero Quest</div>
-          )}
-        </div>
-
-        <div className="flex space-x-3 pointer-events-auto">
-          {!gameState.walletConnected ? (
-            <button 
-              onClick={connectWallet}
-              className="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2.5 rounded-xl flex items-center space-x-2 transition-all font-medieval shadow-lg"
-            >
-              <Wallet size={18} />
-              <span>Connect Sui Wallet</span>
-            </button>
-          ) : (
-            <div className="bg-slate-900/80 border border-slate-700/50 px-4 py-2.5 rounded-xl flex items-center space-x-3 text-blue-300 font-mono text-xs backdrop-blur-xl">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>{gameState.walletAddress?.slice(0, 6)}...{gameState.walletAddress?.slice(-4)}</span>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Top Nav - Đã ẩn */}
 
       {/* Main Game Area */}
       <div className="relative z-10 w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center p-4">

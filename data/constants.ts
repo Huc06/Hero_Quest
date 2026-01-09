@@ -1,5 +1,4 @@
-
-import { HeroClass, HeroStats, Skill } from './types';
+import { HeroClass, HeroStats, Skill } from '../types';
 
 export const DEFAULT_SKILLS: Record<HeroClass, Skill[]> = {
   [HeroClass.PALADIN]: [
@@ -65,3 +64,4 @@ export const CLASS_METADATA: Record<HeroClass, {
 export const GODDESS_PROMPT = 'A magnificent, ethereal Goddess of Light with colossal glowing wings made of pure energy, wearing celestial white and gold flowing robes, divine aura, standing in a cosmic realm filled with nebula and stars, hyper-realistic, 8k resolution, cinematic lighting, masterpiece.';
 export const GAME_WIDTH = 1280;
 export const GAME_HEIGHT = 720;
+
