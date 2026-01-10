@@ -6,7 +6,6 @@ import { HeroClass, GameState, HeroData, InventoryItem, Quest } from './types';
 import { CLASS_METADATA, DEFAULT_SKILLS } from './data';
 import HeroQuestGame from './components/HeroQuestGame';
 import SuiLogPanel, { SuiLogEntry } from './components/SuiLogPanel';
-import TerminalModal from './components/TerminalModal';
 import { Shield, Package, Zap, User, X, Swords, Heart, Wind } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -30,7 +29,6 @@ const App: React.FC = () => {
   });
 
   const [suiLogs, setSuiLogs] = useState<SuiLogEntry[]>([]);
-  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
   const [transactionCompleted, setTransactionCompleted] = useState(false);
   
   // Sync wallet state with game state - chỉ sync khi ở CharacterSelect scene
@@ -110,6 +108,10 @@ const App: React.FC = () => {
   }, [connectWallet, addLog]);
 
   const onHeroSelected = async (heroClass: HeroClass) => {
+    if (transactionCompleted) {
+      return;
+    }
+    
     const metadata = CLASS_METADATA[heroClass];
     const heroName = `Hero_${Math.floor(Math.random() * 1000)}`;
     const bio = `${heroName} là một ${metadata.name} dũng cảm, đã trải qua nhiều cuộc chiến và luôn sẵn sàng bảo vệ Sui Realm khỏi bóng tối.`;
@@ -119,7 +121,6 @@ const App: React.FC = () => {
       return;
     }
     
-    setIsTerminalOpen(true);
     setSuiLogs([]);
     setTransactionCompleted(false);
     
@@ -389,36 +390,47 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* Terminal Modal - Popup khi chọn nhân vật */}
-      <TerminalModal
-        logs={suiLogs}
-        isOpen={isTerminalOpen}
-        onClose={() => {
-          setIsTerminalOpen(false);
-          setTransactionCompleted(false);
-        }}
-        onClear={() => setSuiLogs([])}
-        onContinue={() => {
-          setGameState(prev => ({
-            ...prev,
-            scene: 'MainGame'
-          }));
-          setIsTerminalOpen(false);
-          setTransactionCompleted(false);
-          
-          const phaserGame = (window as any).__PHASER_GAME__;
-          if (phaserGame) {
-            const characterSelectScene = phaserGame.scene.getScene('CharacterSelect');
-            if (characterSelectScene && characterSelectScene.scene.isActive()) {
-              characterSelectScene.cameras.main.fadeOut(500);
-              characterSelectScene.cameras.main.once('camerafadeoutcomplete', () => {
-                characterSelectScene.scene.start('MainGame');
-              });
-            }
-          }
-        }}
-        showContinueButton={transactionCompleted}
-      />
+      {/* Sui SDK Log Panel - Hiển thị ở dưới màn hình khi ở CharacterSelect */}
+      {gameState.scene === 'CharacterSelect' && (
+        <SuiLogPanel 
+          logs={suiLogs} 
+          onClear={() => setSuiLogs([])}
+          visible={gameState.scene === 'CharacterSelect'}
+        />
+      )}
+      
+      {/* Nút TIẾP TỤC - Hiển thị khi transaction hoàn thành */}
+      {gameState.scene === 'CharacterSelect' && transactionCompleted && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[10000]" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              
+              setTransactionCompleted(false);
+              setGameState(prev => ({
+                ...prev,
+                scene: 'MainGame'
+              }));
+              
+              const phaserGame = (window as any).__PHASER_GAME__;
+              if (phaserGame) {
+                const characterSelectScene = phaserGame.scene.getScene('CharacterSelect');
+                if (characterSelectScene && characterSelectScene.scene.isActive()) {
+                  characterSelectScene.cameras.main.fadeOut(500);
+                  characterSelectScene.cameras.main.once('camerafadeoutcomplete', () => {
+                    characterSelectScene.scene.start('MainGame');
+                  });
+                }
+              }
+            }}
+            className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors border border-green-500/50 font-bold shadow-lg"
+            style={{ pointerEvents: 'auto' }}
+          >
+            TIẾP TỤC →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

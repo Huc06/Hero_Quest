@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import Phaser from 'phaser';
 import { GameState, HeroClass } from '../types';
 import { GAME_WIDTH, GAME_HEIGHT } from '../data';
-import { BootScene, TitleScene, OpeningScene, CharacterSelectScene, MainGameScene } from '../scenes';
+import { BootScene, TitleScene, OpeningScene, CharacterSelectScene, MainGameScene, BattleScene } from '../scenes';
 
 interface HeroQuestGameProps {
   gameState: GameState;
@@ -35,7 +35,7 @@ const HeroQuestGame: React.FC<HeroQuestGameProps> = ({ gameState, onHeroSelected
         default: 'arcade',
         arcade: { gravity: { y: 0, x: 0 }, debug: false }
       },
-      scene: [BootScene, TitleScene, OpeningScene, CharacterSelectScene, MainGameScene]
+      scene: [BootScene, TitleScene, OpeningScene, CharacterSelectScene, MainGameScene, BattleScene]
     };
 
     gameRef.current = new Phaser.Game(config);

@@ -49,6 +49,22 @@ export class MainGameScene extends Phaser.Scene {
 
     this.add.text(20, 20, `Khu vực: Sui Realm Core`, { fontFamily: 'MedievalSharp', color: '#94a3b8' });
     this.add.text(20, 50, `Nhân vật: ${currentHero.name}`, { fontFamily: 'MedievalSharp', color: '#f59e0b' });
+    
+    const battleHint = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 50, 'Nhấn SPACE để chiến đấu với Ác Long', {
+      fontFamily: 'MedievalSharp',
+      fontSize: '20px',
+      color: '#f59e0b',
+      stroke: '#000000',
+      strokeThickness: 2
+    }).setOrigin(0.5);
+    
+    const spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    spaceKey.on('down', () => {
+      this.cameras.main.fadeOut(500);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start('Battle');
+      });
+    });
   }
 
   update() {

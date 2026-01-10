@@ -19,12 +19,12 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
   const [copied, setCopied] = React.useState(false);
   const [isResizing, setIsResizing] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [panelHeight, setPanelHeight] = React.useState(256);
+  const [panelHeight, setPanelHeight] = React.useState(180);
   const [panelBottom, setPanelBottom] = React.useState(0);
   const logEndRef = React.useRef<HTMLDivElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);
   const resizeStartY = React.useRef<number>(0);
-  const resizeStartHeight = React.useRef<number>(256);
+  const resizeStartHeight = React.useRef<number>(180);
   const dragStartY = React.useRef<number>(0);
   const dragStartBottom = React.useRef<number>(0);
 
@@ -61,7 +61,7 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
       if (isResizing) {
         // Resize: kéo lên = tăng height, kéo xuống = giảm height
         const deltaY = resizeStartY.current - e.clientY;
-        const newHeight = Math.max(120, Math.min(600, resizeStartHeight.current + deltaY));
+        const newHeight = Math.max(100, Math.min(400, resizeStartHeight.current + deltaY));
         setPanelHeight(newHeight);
       } else if (isDragging) {
         // Drag: kéo lên = panel di chuyển lên (bottom tăng), kéo xuống = panel di chuyển xuống (bottom giảm)
@@ -117,17 +117,21 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
   return (
     <div 
       ref={panelRef}
-      className="absolute left-0 right-0 bg-black border-t-2 border-green-500/30 z-[200] font-mono shadow-2xl" 
+      className="absolute bg-black border-2 border-green-500/50 z-[200] font-mono rounded-t-lg shadow-2xl" 
       style={{ 
         fontFamily: 'Monaco, Menlo, "Courier New", monospace',
         height: `${panelHeight}px`,
         bottom: `${panelBottom}px`,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '90%',
+        maxWidth: '900px',
         pointerEvents: 'auto'
       }}
     >
       {/* Drag Handle - Kéo để di chuyển panel lên/xuống */}
       <div
-        className="absolute top-0 left-0 right-0 h-8 bg-green-500/20 hover:bg-green-500/40 cursor-move flex items-center justify-center group select-none"
+        className="absolute top-0 left-0 right-0 h-8 bg-green-500/20 hover:bg-green-500/30 cursor-move flex items-center justify-center group select-none"
         onMouseDown={handleDragMouseDown}
         style={{ 
           userSelect: 'none', 
@@ -136,23 +140,23 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
           zIndex: 20
         }}
       >
-        <div className="w-full h-full"></div>
+        <div className="w-16 h-0.5 bg-green-500/60 rounded-full"></div>
       </div>
       
       {/* Resize Handle - Kéo để thay đổi chiều cao */}
       <div
-        className="absolute top-8 left-0 right-0 h-2 bg-green-500/20 hover:bg-green-500/40 cursor-ns-resize flex items-center justify-center group"
+        className="absolute top-8 left-0 right-0 h-2 bg-green-500/20 hover:bg-green-500/30 cursor-ns-resize flex items-center justify-center group"
         onMouseDown={handleResizeMouseDown}
         style={{ 
           pointerEvents: 'auto',
           zIndex: 19
         }}
       >
-        <div className="w-16 h-1 bg-green-500/60 rounded-full group-hover:bg-green-500"></div>
+        <div className="w-16 h-1 bg-green-500/60 rounded-full group-hover:bg-green-500/80"></div>
       </div>
       
       {/* Terminal Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-green-500/20" style={{ marginTop: '50px' }}>
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-green-500/20" style={{ marginTop: '40px' }}>
         <div className="flex items-center space-x-2">
           <div className="flex space-x-1.5">
             <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -166,7 +170,7 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
         <div className="flex space-x-2">
           <button
             onClick={copyAllLogs}
-            className="px-2 py-1 text-[10px] bg-gray-800 hover:bg-gray-700 text-green-400 rounded flex items-center space-x-1 transition-colors border border-green-500/20"
+            className="px-2 py-1 text-[10px] bg-gray-800 hover:bg-gray-700 text-green-400 rounded transition-colors border border-green-500/20 flex items-center space-x-1"
             title="Copy all logs"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
@@ -185,17 +189,19 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
 
       {/* Terminal Body */}
       <div 
-        className="overflow-y-auto p-4 text-xs bg-black text-green-400" 
+        className="overflow-y-auto p-3 text-xs bg-black text-green-400" 
         style={{ 
           fontFamily: 'Monaco, Menlo, "Courier New", monospace',
-          height: `${panelHeight - 90}px` // Subtract header + handles height
+          height: `${panelHeight - 90}px`,
+          lineHeight: '1.4',
+          fontSize: '11px'
         }}
       >
         {logs.length === 0 ? (
-          <div className="text-gray-600">
+          <div className="text-gray-500">
             <span className="text-green-500">$</span>{' '}
             <span className="text-gray-500">Waiting for character selection...</span>
-            <span className="animate-pulse">▋</span>
+            <span className="text-green-400 animate-pulse ml-1">▋</span>
           </div>
         ) : (
           <>
@@ -210,14 +216,14 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
                     <div className="flex-1">
                       <span className={getLogColor(log.type)}>{log.message}</span>
                       {log.data && (
-                        <pre className="mt-2 text-[11px] text-gray-400 bg-gray-900/50 p-3 rounded border border-green-500/10 overflow-x-auto">
+                        <pre className="mt-2 text-[11px] text-gray-400 bg-gray-900/70 p-3 rounded border border-green-500/20 overflow-x-auto" style={{ lineHeight: '1.4' }}>
                           <code>{typeof log.data === 'string' ? log.data : JSON.stringify(log.data, null, 2)}</code>
                         </pre>
                       )}
                     </div>
                   </div>
                   {isLast && (
-                    <div className="flex items-center mt-1">
+                    <div className="flex items-center mt-1 ml-4">
                       <span className="text-green-500">$</span>
                       <span className="ml-2 text-green-400 animate-pulse">▋</span>
                     </div>

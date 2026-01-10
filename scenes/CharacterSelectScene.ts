@@ -142,13 +142,16 @@ export class CharacterSelectScene extends Phaser.Scene {
       };
       
       const imageKey = imageMap[classKey];
+      let initialIconScale = 1;
       if (imageKey && this.textures.exists(imageKey)) {
         icon = this.add.image(0, -130, imageKey).setOrigin(0.5);
         // Scale ảnh để vừa với card nhỏ hơn
         const scale = Math.min(160 / icon.width, 160 / icon.height);
-        icon.setScale(scale * 0.7);
+        initialIconScale = scale * 0.7;
+        icon.setScale(initialIconScale);
       } else {
         icon = this.add.text(0, -130, metadata.icon, { fontSize: '80px' }).setOrigin(0.5);
+        initialIconScale = 1;
       }
       const name = this.add.text(0, -30, metadata.name, { 
         fontFamily: 'MedievalSharp', 
@@ -200,17 +203,22 @@ export class CharacterSelectScene extends Phaser.Scene {
         bg.setStrokeStyle(5, parseInt(metadata.color.replace('#', '0x')), 1);
         bgGlow.setAlpha(0.3);
         this.tweens.add({ targets: card, scale: 1.08, duration: 200, ease: 'Power2' });
-        this.tweens.add({ targets: icon, scale: 1.2, duration: 200 });
+        this.tweens.add({ targets: icon, scale: initialIconScale * 1.2, duration: 200 });
       });
       
       card.on('pointerout', () => {
         bg.setStrokeStyle(3, parseInt(metadata.color.replace('#', '0x')), 0.3);
         bgGlow.setAlpha(0.1);
-        this.tweens.add({ targets: card, scale: 1.0, duration: 200 });
-        this.tweens.add({ targets: icon, scale: 1.0, duration: 200 });
+        this.tweens.add({ targets: card, scale: 1.0, duration: 200, ease: 'Power2' });
+        this.tweens.add({ targets: icon, scale: initialIconScale, duration: 200 });
       });
       
       card.on('pointerdown', () => {
+        const gameState = this.registry.get('gameState');
+        if (gameState?.transactionCompleted) {
+          return;
+        }
+        
         this.cameras.main.flash(300, 255, 255, 255);
         const { onHeroSelected } = this.registry.get('callbacks');
         
