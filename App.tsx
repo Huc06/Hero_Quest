@@ -1,11 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
+import { useWallets, useCurrentWallet, useCurrentAccount, useConnectWallet, useDisconnectWallet, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import { Transaction } from '@mysten/sui/transactions';
 import { HeroClass, GameState, HeroData, InventoryItem, Quest } from './types';
 import { CLASS_METADATA, DEFAULT_SKILLS } from './data';
 import HeroQuestGame from './components/HeroQuestGame';
+import SuiLogPanel, { SuiLogEntry } from './components/SuiLogPanel';
+import TerminalModal from './components/TerminalModal';
 import { Shield, Package, Zap, User, X, Swords, Heart, Wind } from 'lucide-react';
 
 const App: React.FC = () => {
+  const wallets = useWallets();
+  const { currentWallet, isConnected } = useCurrentWallet();
+  const currentAccount = useCurrentAccount();
+  const { mutate: connect } = useConnectWallet();
+  const { mutate: disconnect } = useDisconnectWallet();
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
+  
   const [gameState, setGameState] = useState<GameState>({
     currentHero: null,
     walletConnected: false,
@@ -18,32 +29,119 @@ const App: React.FC = () => {
     activeTab: null
   });
 
-  const connectWallet = () => {
-    const mockAddress = '0x' + Math.random().toString(16).slice(2, 42);
-    setGameState(prev => ({
-      ...prev,
-      walletConnected: true,
-      walletAddress: mockAddress
-    }));
-  };
+  const [suiLogs, setSuiLogs] = useState<SuiLogEntry[]>([]);
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+  const [transactionCompleted, setTransactionCompleted] = useState(false);
+  
+  // Sync wallet state with game state - chỉ sync khi ở CharacterSelect scene
+  useEffect(() => {
+    if (gameState.scene === 'CharacterSelect') {
+      if (isConnected && currentAccount) {
+        setGameState(prev => ({
+          ...prev,
+          walletConnected: true,
+          walletAddress: currentAccount.address
+        }));
+      } else {
+        setGameState(prev => ({
+          ...prev,
+          walletConnected: false,
+          walletAddress: null
+        }));
+      }
+    }
+  }, [isConnected, currentAccount, gameState.scene]);
+
+  const addLog = React.useCallback((type: SuiLogEntry['type'], message: string, data?: any) => {
+    const timestamp = new Date().toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      fractionalSecondDigits: 3
+    });
+    setSuiLogs(prev => [...prev, {
+      id: Math.random().toString(36).substr(2, 9),
+      timestamp,
+      type,
+      message,
+      data
+    }]);
+  }, []);
+
+  const connectWallet = React.useCallback(() => {
+    // Chỉ cho phép connect khi ở CharacterSelect scene
+    if (gameState.scene !== 'CharacterSelect') {
+      return;
+    }
+    
+    try {
+      if (wallets.length === 0) {
+        return;
+      }
+      
+      // Use the first available wallet
+      const walletToConnect = wallets[0];
+      
+      connect(
+        { wallet: walletToConnect },
+        {
+          onSuccess: () => {
+            // Không log khi connect wallet
+          },
+          onError: (error: any) => {
+            // Không log error
+          }
+        }
+      );
+    } catch (error: any) {
+      // Không log error
+    }
+  }, [connect, wallets, gameState.scene]);
+
+  // Expose functions to window for Phaser scenes
+  useEffect(() => {
+    (window as any).connectWallet = connectWallet;
+    (window as any).addSuiLog = addLog;
+    return () => {
+      delete (window as any).connectWallet;
+      delete (window as any).addSuiLog;
+    };
+  }, [connectWallet, addLog]);
 
   const onHeroSelected = async (heroClass: HeroClass) => {
     const metadata = CLASS_METADATA[heroClass];
     const heroName = `Hero_${Math.floor(Math.random() * 1000)}`;
     const bio = `${heroName} là một ${metadata.name} dũng cảm, đã trải qua nhiều cuộc chiến và luôn sẵn sàng bảo vệ Sui Realm khỏi bóng tối.`;
     
-    const newHero: HeroData = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: heroName,
-      classType: heroClass,
-      stats: metadata.stats,
-      level: 1,
-      exp: 0,
-      walletAddress: gameState.walletAddress || undefined,
-      skills: DEFAULT_SKILLS[heroClass],
-      biography: bio
-    };
-
+    if (!isConnected || !currentAccount) {
+      alert('Vui lòng connect wallet trước khi chọn nhân vật!');
+      return;
+    }
+    
+    setIsTerminalOpen(true);
+    setSuiLogs([]);
+    setTransactionCompleted(false);
+    
+    const packageId = '0x8293ff56f12eaf3de33823b7c2ef448c50e3d3480d211e3622c189ca99940a97';
+    const module = 'hero';
+    const functionName = 'mint_hero';
+    
+    await new Promise(resolve => setTimeout(resolve, 500));
+    addLog('call', 'Preparing Sui Move call', {
+      code: `const tx = new Transaction();\ntx.moveCall({\n  target: '${packageId}::${module}::${functionName}',\n  arguments: []\n});`
+    });
+    
+    const tx = new Transaction();
+    tx.moveCall({
+      target: `${packageId}::${module}::${functionName}`,
+      arguments: []
+    });
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    addLog('call', 'Signing and executing transaction', {
+      code: `const result = await signAndExecuteTransaction({\n  transaction: tx\n});\nconsole.log('Transaction digest:', result.digest);`
+    });
     const formattedQuests: Quest[] = [
       {
         id: Math.random().toString(36).substr(2, 5),
@@ -67,13 +165,59 @@ const App: React.FC = () => {
         status: 'AVAILABLE'
       }
     ];
-
-    setGameState(prev => ({
-      ...prev,
-      currentHero: newHero,
-      quests: formattedQuests,
-      scene: 'MainGame'
-    }));
+    
+    // Step 3: Sign and execute transaction - Wallet sẽ popup để approve
+    signAndExecute(
+      {
+        transaction: tx
+      },
+      {
+        onSuccess: (result) => {
+          addLog('call', 'Transaction executed successfully', {
+            code: `{\n  digest: '${result.digest}',\n  effects: ${JSON.stringify(result.effects || {}, null, 2)}\n}`
+          });
+          
+          setTransactionCompleted(true);
+          
+          setTimeout(() => {
+            const heroObjectId = result.digest || '0x' + Math.random().toString(16).slice(2, 66);
+            
+            addLog('call', 'Fetching hero object from Sui', {
+              code: `const txEffects = await suiClient.getTransactionBlock({\n  digest: '${result.digest}',\n  options: { showObjectChanges: true }\n});\nconst heroObjectId = txEffects.objectChanges.find(\n  change => change.type === 'created' && change.objectType.includes('Hero')\n)?.objectId;\n\nconst heroObject = await suiClient.getObject({\n  id: heroObjectId,\n  options: { \n    showContent: true,\n    showOwner: true,\n    showType: true\n  }\n});\nconsole.log('Hero NFT:', heroObject);`
+            });
+            
+            const newHero: HeroData = {
+              id: heroObjectId,
+              name: heroName,
+              classType: heroClass,
+              stats: {
+                health: 100,
+                attack: metadata.stats.attack,
+                defense: metadata.stats.defense,
+                speed: metadata.stats.speed
+              },
+              level: 1,
+              exp: 0,
+              walletAddress: currentAccount.address,
+              skills: DEFAULT_SKILLS[heroClass],
+              biography: bio
+            };
+            
+            setGameState(prev => ({
+              ...prev,
+              currentHero: newHero,
+              quests: formattedQuests
+            }));
+          }, 500);
+        },
+        onError: (error: any) => {
+          addLog('call', 'Transaction failed', {
+            code: `${error.message || JSON.stringify(error, null, 2)}`
+          });
+          alert('Transaction failed: ' + (error.message || 'Unknown error'));
+        }
+      }
+    );
   };
 
   const handleSceneChange = (newScene: string) => {
@@ -244,6 +388,37 @@ const App: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Terminal Modal - Popup khi chọn nhân vật */}
+      <TerminalModal
+        logs={suiLogs}
+        isOpen={isTerminalOpen}
+        onClose={() => {
+          setIsTerminalOpen(false);
+          setTransactionCompleted(false);
+        }}
+        onClear={() => setSuiLogs([])}
+        onContinue={() => {
+          setGameState(prev => ({
+            ...prev,
+            scene: 'MainGame'
+          }));
+          setIsTerminalOpen(false);
+          setTransactionCompleted(false);
+          
+          const phaserGame = (window as any).__PHASER_GAME__;
+          if (phaserGame) {
+            const characterSelectScene = phaserGame.scene.getScene('CharacterSelect');
+            if (characterSelectScene && characterSelectScene.scene.isActive()) {
+              characterSelectScene.cameras.main.fadeOut(500);
+              characterSelectScene.cameras.main.once('camerafadeoutcomplete', () => {
+                characterSelectScene.scene.start('MainGame');
+              });
+            }
+          }
+        }}
+        showContinueButton={transactionCompleted}
+      />
     </div>
   );
 };

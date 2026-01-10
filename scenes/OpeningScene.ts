@@ -7,6 +7,12 @@ export class OpeningScene extends Phaser.Scene {
   }
   
   create() {
+    // Update scene in React state
+    const { onSceneChange } = this.registry.get('callbacks');
+    if (onSceneChange) {
+      onSceneChange('Opening');
+    }
+    
     // Background
     let cosmicBg: Phaser.GameObjects.Image | null = null;
     if (this.textures.exists('cosmic_bg')) {
