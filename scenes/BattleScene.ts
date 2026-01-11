@@ -629,8 +629,37 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  playJoJoMusic() {
+    console.log('BattleScene: Attempting to play jojo_ending music...');
+    
+    try {
+      if (this.cache.audio.exists('jojo_ending')) {
+        console.log('BattleScene: Audio cache found, playing...');
+        const music = this.sound.add('jojo_ending', { volume: 0.6 });
+        music.play();
+        console.log('BattleScene: Music playing:', music.isPlaying);
+      } else {
+        console.warn('BattleScene: jojo_ending audio not found in cache');
+      }
+    } catch (error) {
+      console.error('BattleScene: Error playing music:', error);
+    }
+  }
+
   gameOver() {
     console.log('BattleScene: Game Over - JoJo style!');
+    
+    // 🎵 Play JoJo ending music (Roundabout style)
+    // Resume audio context first (required by browser autoplay policy)
+    const soundManager = this.sound as any;
+    if (soundManager.context && soundManager.context.state === 'suspended') {
+      console.log('BattleScene: Resuming suspended audio context...');
+      soundManager.context.resume().then(() => {
+        this.playJoJoMusic();
+      });
+    } else {
+      this.playJoJoMusic();
+    }
     
     // Disable all action buttons
     if (this.actionButtons) {
@@ -780,18 +809,15 @@ export class BattleScene extends Phaser.Scene {
         ease: 'Sine.easeInOut'
       });
 
-      // Optional: Play Roundabout-style music (you'll need to add the audio file)
-      // Uncomment if you have the audio:
-      // if (this.sound.get('roundabout')) {
-      //   this.sound.play('roundabout', { volume: 0.3 });
-      // }
-
       // Space key to return to Title
       const spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
       spaceKey.once('down', () => {
+        // Stop JoJo music
+        this.sound.stopAll();
+        
         // Freeze frame zoom out effect
         this.tweens.add({
-          targets: [arrow, toBeContinued, subtitle],
+          targets: [arrow, toBeContinued, subtitle, hintText],
           alpha: 0,
           scale: 0.8,
           duration: 300

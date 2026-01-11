@@ -27,6 +27,11 @@ export class BootScene extends Phaser.Scene {
     // Load dragon sprite (only dragon_idle exists)
     this.load.image('dragon_idle', '/assets/dragon_idle.png').on('loaderror', () => console.warn('dragon_idle.png not found'));
     
+    // Load JoJo ending music (Roundabout style)
+    this.load.audio('jojo_ending', '/assets/roundabout.mp3').on('loaderror', () => {
+      console.warn('roundabout.mp3 not found - JoJo ending will be silent');
+    });
+    
     const progress = this.add.graphics();
     this.load.on('progress', (value: number) => {
       progress.clear();
