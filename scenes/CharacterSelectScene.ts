@@ -121,13 +121,13 @@ export class CharacterSelectScene extends Phaser.Scene {
     
     classes.forEach((classKey, idx) => {
       const metadata = CLASS_METADATA[classKey];
-      const x = 160 + idx * 280;
-      const y = 350; // Di chuyển lên cao hơn
+      const cardWidth = 220;
+      const cardHeight = 320;
+      const spacing = 250;
+      const startX = (GAME_WIDTH - (spacing * 3 + cardWidth)) / 2 + cardWidth / 2;
+      const x = startX + idx * spacing;
+      const y = 280; // Căn giữa màn hình, để terminal ở dưới
       const card = this.add.container(x, y);
-      
-      // Thu nhỏ card: 240x480 -> 200x400
-      const cardWidth = 200;
-      const cardHeight = 400;
       const bg = this.add.rectangle(0, 0, cardWidth, cardHeight, 0x0f172a, 0.95)
         .setStrokeStyle(3, parseInt(metadata.color.replace('#', '0x')), 0.3);
       const bgGlow = this.add.rectangle(0, 0, cardWidth, cardHeight, parseInt(metadata.color.replace('#', '0x')), 0.1);
@@ -144,60 +144,44 @@ export class CharacterSelectScene extends Phaser.Scene {
       const imageKey = imageMap[classKey];
       let initialIconScale = 1;
       if (imageKey && this.textures.exists(imageKey)) {
-        icon = this.add.image(0, -130, imageKey).setOrigin(0.5);
-        // Scale ảnh để vừa với card nhỏ hơn
-        const scale = Math.min(160 / icon.width, 160 / icon.height);
-        initialIconScale = scale * 0.7;
+        icon = this.add.image(0, -90, imageKey).setOrigin(0.5);
+        // Scale ảnh để vừa với card
+        const scale = Math.min(140 / icon.width, 140 / icon.height);
+        initialIconScale = scale * 0.65;
         icon.setScale(initialIconScale);
       } else {
-        icon = this.add.text(0, -130, metadata.icon, { fontSize: '80px' }).setOrigin(0.5);
+        icon = this.add.text(0, -90, metadata.icon, { fontSize: '70px' }).setOrigin(0.5);
         initialIconScale = 1;
       }
-      const name = this.add.text(0, -30, metadata.name, { 
+      const name = this.add.text(0, -10, metadata.name, { 
         fontFamily: 'MedievalSharp', 
-        fontSize: '22px', 
+        fontSize: '24px', 
         color: metadata.color,
         stroke: '#000000',
-        strokeThickness: 2
+        strokeThickness: 3
       }).setOrigin(0.5);
       
-      const desc = this.add.text(0, 5, metadata.description, {
+      const desc = this.add.text(0, 25, metadata.description, {
         fontFamily: 'Almendra',
         fontSize: '14px',
         color: '#cbd5e1',
-        wordWrap: { width: 170, useAdvancedWrap: true },
+        wordWrap: { width: 180, useAdvancedWrap: true },
         align: 'center'
       }).setOrigin(0.5);
       
-      const statsY = 60;
-      const statsText = [
-        `❤️ HP: ${metadata.stats.health}`,
-        `⚔️ ATK: ${metadata.stats.attack}`,
-        `🛡️ DEF: ${metadata.stats.defense}`,
-        `💨 SPD: ${metadata.stats.speed}`
-      ];
-      
-      const statsContainer = this.add.container(0, statsY);
-      statsText.forEach((stat, i) => {
-        const statText = this.add.text(0, i * 24, stat, {
-          fontFamily: 'Almendra',
-          fontSize: '13px',
-          color: '#e2e8f0'
-        }).setOrigin(0.5);
-        statsContainer.add(statText);
-      });
-      
-      const selectBtn = this.add.rectangle(0, 160, 150, 35, parseInt(metadata.color.replace('#', '0x')), 0.8)
-        .setStrokeStyle(2, parseInt(metadata.color.replace('#', '0x')));
-      const selectText = this.add.text(0, 160, 'CHỌN', {
+      const selectBtn = this.add.rectangle(0, 100, 170, 42, parseInt(metadata.color.replace('#', '0x')), 0.9)
+        .setStrokeStyle(3, parseInt(metadata.color.replace('#', '0x')));
+      const selectText = this.add.text(0, 100, 'CHỌN', {
         fontFamily: 'MedievalSharp',
-        fontSize: '16px',
-        color: '#ffffff'
+        fontSize: '20px',
+        color: '#ffffff',
+        stroke: '#000000',
+        strokeThickness: 3
       }).setOrigin(0.5);
       
-      card.add([bgGlow, bg, icon, name, desc, statsContainer, selectBtn, selectText]);
+      card.add([bgGlow, bg, icon, name, desc, selectBtn, selectText]);
       card.setDepth(2);
-      card.setInteractive(new Phaser.Geom.Rectangle(-100, -200, cardWidth, cardHeight), Phaser.Geom.Rectangle.Contains);
+      card.setInteractive(new Phaser.Geom.Rectangle(-cardWidth/2, -cardHeight/2, cardWidth, cardHeight), Phaser.Geom.Rectangle.Contains);
       
       card.on('pointerover', () => {
         bg.setStrokeStyle(5, parseInt(metadata.color.replace('#', '0x')), 1);

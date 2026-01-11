@@ -21,12 +21,12 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible, trans
   const [copied, setCopied] = React.useState(false);
   const [isResizing, setIsResizing] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [panelHeight, setPanelHeight] = React.useState(180);
-  const [panelBottom, setPanelBottom] = React.useState(0);
+  const [panelHeight, setPanelHeight] = React.useState(280);
+  const [panelBottom, setPanelBottom] = React.useState(20);
   const logEndRef = React.useRef<HTMLDivElement>(null);
   const panelRef = React.useRef<HTMLDivElement>(null);
   const resizeStartY = React.useRef<number>(0);
-  const resizeStartHeight = React.useRef<number>(180);
+  const resizeStartHeight = React.useRef<number>(280);
   const dragStartY = React.useRef<number>(0);
   const dragStartBottom = React.useRef<number>(0);
 
@@ -63,7 +63,7 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible, trans
       if (isResizing) {
         // Resize: kéo lên = tăng height, kéo xuống = giảm height
         const deltaY = resizeStartY.current - e.clientY;
-        const newHeight = Math.max(100, Math.min(400, resizeStartHeight.current + deltaY));
+        const newHeight = Math.max(150, Math.min(500, resizeStartHeight.current + deltaY));
         setPanelHeight(newHeight);
       } else if (isDragging) {
         // Drag: kéo lên = panel di chuyển lên (bottom tăng), kéo xuống = panel di chuyển xuống (bottom giảm)
@@ -126,8 +126,8 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible, trans
         bottom: `${panelBottom}px`,
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '90%',
-        maxWidth: '900px',
+        width: '95%',
+        maxWidth: '1200px',
         pointerEvents: 'auto'
       }}
     >

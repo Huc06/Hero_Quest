@@ -382,18 +382,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-screen h-screen bg-slate-950 flex flex-col items-center justify-center overflow-hidden text-slate-200">
-      {/* Decorative Background */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-800 rounded-full blur-[120px]"></div>
-      </div>
+    <div className="relative w-screen h-screen bg-black flex flex-col items-center justify-center overflow-hidden text-slate-200">
+      {/* Decorative Background - REMOVED */}
 
       {/* Top Nav - Đã ẩn */}
 
       {/* Main Game Area */}
-      <div className="relative z-10 w-full h-full max-w-[1920px] max-h-[1080px] flex items-center justify-center p-4">
-        <div className="w-full h-full aspect-video shadow-2xl rounded-lg overflow-hidden border border-slate-800/50 relative bg-black">
+      <div className="relative z-10 w-full h-full flex items-center justify-center">
+        <div className="w-full h-full overflow-hidden relative bg-black">
           <HeroQuestGame 
             gameState={gameState} 
             onHeroSelected={onHeroSelected}
@@ -876,19 +872,20 @@ const App: React.FC = () => {
 
       {/* Bottom HUD Nav - REMOVED */}
 
-      {/* Sui SDK Log Panel - Hiển thị ở dưới màn hình khi ở CharacterSelect */}
+      {/* Sui SDK Log Panel - Hiển thị NGAY khi vào CharacterSelect scene */}
       {gameState.scene === 'CharacterSelect' && (
         <SuiLogPanel 
           logs={suiLogs} 
           onClear={() => setSuiLogs([])}
-          visible={gameState.scene === 'CharacterSelect'}
+          visible={true}
           transactionCompleted={transactionCompleted}
           onContinue={() => {
             setTransactionCompleted(false);
+            setSuiLogs([]); // Clear logs khi chuyển scene
             setGameState(prev => ({
               ...prev,
               scene: 'MainGame',
-              activeTab: 'HERO' // Tự động mở Hero tab
+              activeTab: null
             }));
             
             const phaserGame = (window as any).__PHASER_GAME__;
