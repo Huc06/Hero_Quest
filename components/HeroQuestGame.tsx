@@ -9,9 +9,10 @@ interface HeroQuestGameProps {
   onHeroSelected: (heroClass: HeroClass) => void;
   onSceneChange: (scene: string) => void;
   onContinueToGame?: () => void;
+  onSetActiveTab?: (tab: GameState['activeTab']) => void;
 }
 
-const HeroQuestGame: React.FC<HeroQuestGameProps> = ({ gameState, onHeroSelected, onSceneChange, onContinueToGame }) => {
+const HeroQuestGame: React.FC<HeroQuestGameProps> = ({ gameState, onHeroSelected, onSceneChange, onContinueToGame, onSetActiveTab }) => {
   const gameRef = useRef<Phaser.Game | null>(null);
 
   useEffect(() => {
@@ -48,10 +49,10 @@ const HeroQuestGame: React.FC<HeroQuestGameProps> = ({ gameState, onHeroSelected
   useEffect(() => {
     if (gameRef.current) {
       gameRef.current.registry.set('gameState', gameState);
-      gameRef.current.registry.set('callbacks', { onHeroSelected, onSceneChange, onContinueToGame });
+      gameRef.current.registry.set('callbacks', { onHeroSelected, onSceneChange, onContinueToGame, onSetActiveTab });
       (window as any).__PHASER_GAME__ = gameRef.current;
     }
-  }, [gameState, onHeroSelected, onSceneChange, onContinueToGame]);
+  }, [gameState, onHeroSelected, onSceneChange, onContinueToGame, onSetActiveTab]);
 
   return <div id="phaser-root" className="w-full h-full bg-slate-950" />;
 };

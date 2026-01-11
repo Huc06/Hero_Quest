@@ -13,9 +13,11 @@ interface SuiLogPanelProps {
   logs: SuiLogEntry[];
   onClear: () => void;
   visible: boolean;
+  transactionCompleted?: boolean;
+  onContinue?: () => void;
 }
 
-const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => {
+const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible, transactionCompleted = false, onContinue }) => {
   const [copied, setCopied] = React.useState(false);
   const [isResizing, setIsResizing] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -184,6 +186,19 @@ const SuiLogPanel: React.FC<SuiLogPanelProps> = ({ logs, onClear, visible }) => 
             <X size={12} />
             <span>Clear</span>
           </button>
+          {transactionCompleted && onContinue && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onContinue();
+              }}
+              className="px-3 py-1 text-[10px] bg-green-600 hover:bg-green-700 text-white rounded transition-colors border border-green-500/50 font-bold flex items-center space-x-1"
+              title="Continue to next scene"
+            >
+              <span>TIẾP TỤC →</span>
+            </button>
+          )}
         </div>
       </div>
 

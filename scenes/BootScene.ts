@@ -23,13 +23,9 @@ export class BootScene extends Phaser.Scene {
     this.load.image('flare', 'https://raw.githubusercontent.com/photonstorm/phaser3-examples/master/public/assets/particles/blue.png');
     
     this.load.image('battle_arena', '/assets/battle_arena.png').on('loaderror', () => console.warn('battle_arena.png not found'));
-    this.load.spritesheet('dragon_idle', '/assets/dragon_idle.png', { frameWidth: 256, frameHeight: 256 }).on('loaderror', () => console.warn('dragon_idle.png not found'));
-    this.load.spritesheet('dragon_fire', '/assets/dragon_fire.png', { frameWidth: 256, frameHeight: 256 }).on('loaderror', () => console.warn('dragon_fire.png not found'));
-    this.load.spritesheet('dragon_roar', '/assets/dragon_roar.png', { frameWidth: 256, frameHeight: 256 }).on('loaderror', () => console.warn('dragon_roar.png not found'));
-    this.load.spritesheet('fire_effect', '/assets/fire_effect.png', { frameWidth: 32, frameHeight: 32 }).on('loaderror', () => console.warn('fire_effect.png not found'));
-    this.load.spritesheet('impact_effect', '/assets/impact_effect.png', { frameWidth: 64, frameHeight: 64 }).on('loaderror', () => console.warn('impact_effect.png not found'));
-    this.load.spritesheet('magic_spell', '/assets/magic_spell.png', { frameWidth: 64, frameHeight: 64 }).on('loaderror', () => console.warn('magic_spell.png not found'));
-    this.load.image('victory_scene', '/assets/victory_scene.png').on('loaderror', () => console.warn('victory_scene.png not found'));
+    
+    // Load dragon sprite (only dragon_idle exists)
+    this.load.image('dragon_idle', '/assets/dragon_idle.png').on('loaderror', () => console.warn('dragon_idle.png not found'));
     
     const progress = this.add.graphics();
     this.load.on('progress', (value: number) => {
@@ -44,8 +40,13 @@ export class BootScene extends Phaser.Scene {
   }
   
   create() {
+    console.log('BootScene: Starting...');
+    
     // Xử lý loại bỏ nền xám/trắng từ ảnh
-    this.processTextureTransparency('goddess');
+    if (this.textures.exists('goddess')) {
+      this.processTextureTransparency('goddess');
+    }
+    
     // Xử lý nền trong suốt cho các ảnh nhân vật
     ['paladin', 'warrior', 'mage', 'archer'].forEach(textureKey => {
       if (this.textures.exists(textureKey)) {
@@ -53,7 +54,16 @@ export class BootScene extends Phaser.Scene {
       }
     });
     
-    this.cameras.main.fadeOut(0);
+    // Xử lý nền trong suốt cho dragon sprite
+    if (this.textures.exists('dragon_idle')) {
+      try {
+        this.processTextureTransparency('dragon_idle');
+      } catch (error) {
+        console.warn(`Failed to process transparency for dragon_idle:`, error);
+      }
+    }
+    
+    console.log('BootScene: Assets processed, starting Title scene...');
     this.scene.start('Title');
   }
   

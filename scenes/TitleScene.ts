@@ -7,8 +7,9 @@ export class TitleScene extends Phaser.Scene {
   }
   
   create() {
+    console.log('TitleScene: Starting...');
     this.cameras.main.setBackgroundColor(0x000000);
-    this.cameras.main.fadeIn(0);
+    this.cameras.main.fadeIn(1000);
     this.cameras.main.setAlpha(1);
     
     if (this.textures.exists('village_map')) {

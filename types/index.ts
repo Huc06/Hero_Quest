@@ -29,6 +29,12 @@ export interface InventoryItem {
   description: string;
   stats?: Partial<HeroStats>;
   icon: string;
+  // Equipment layer image - để overlay lên character
+  layerImage?: string;
+  // Position offset cho equipment layer (px)
+  layerOffset?: { x: number; y: number };
+  // Scale cho equipment layer
+  layerScale?: number;
 }
 
 export interface Quest {
@@ -49,6 +55,12 @@ export interface HeroData {
   walletAddress?: string;
   skills: Skill[];
   biography?: string;
+  equippedWeapon?: InventoryItem | null;
+  equippedArmor?: InventoryItem | null;
+  equippedHelmet?: InventoryItem | null;
+  equippedBoots?: InventoryItem | null;
+  equippedRing?: InventoryItem | null;
+  equippedBracelet?: InventoryItem | null;
 }
 
 export interface GameState {
